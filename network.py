@@ -9,21 +9,8 @@ import torch
 class BasicNetwork(nn.Module):
     def __init__(self):
         super(BasicNetwork,self).__init__()
-        self.day_convolution = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(8, 8,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(8, 8),
-            nn.Flatten(),
-            nn.Linear(4608,1024),
-            nn.ReLU(),
-            nn.Linear(1024, 256),
-            nn.ReLU(),
-            nn.Linear(256, 64)
-        )
-        self.night_convolution = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, padding=1),
+        self.single_convolution = nn.Sequential(
+            nn.Conv2d(2, 8, kernel_size=3, padding=1),
             nn.ReLU(),
             nn.Conv2d(8, 8, kernel_size=3,stride=1,padding=1),
             nn.ReLU(),
@@ -33,7 +20,7 @@ class BasicNetwork(nn.Module):
             nn.ReLU(),
             nn.Linear(1024, 256),
             nn.ReLU(),
-            nn.Linear(256,64)
+            nn.Linear(256,128)
         )
         self.wider_stack = nn.Sequential(OrderedDict([ #Creating an ordered dictionary of the 3 layers we want in our NN
             ('Input', nn.Linear(128, 64)),
@@ -45,16 +32,9 @@ class BasicNetwork(nn.Module):
         ]))
     #Defining how the data flows through the layer, PyTorch will call this we will never have to call it
     def forward(self, x):
-        logits1 = self.day_convolution(x[0])
-        logits2 = self.night_convolution(x[1])
-        #print(logits1.shape, logits2.shape)
-        logits3 = cat((logits1, logits2), 1)
-        #print(logits3.shape)
-        logits4 = self.wider_stack(logits3)
-        return logits4
-        '''logits = self.single_convolution(x)
+        logits = self.single_convolution(x)
         logits = self.wider_stack(logits)
-        return logits'''
+        return logits
 
 def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_save, key):
     batches = int(len(dataloader.dataset)/bs)

@@ -11,19 +11,19 @@ import telegram_send
 
 if __name__ == "__main__":
     wandb.init(project="CS545_Midterm", entity="jcscheufele")
-    name = "Using_Val_full_splitConv"
+    name = "Using_Val_full_singleConv"
     wandb.run.name = name
 
     print("making tr_data")
     tr_dataset = BasicDataset(train="Train")
     print("saving tr_data")
-    torch.save(tr_dataset, "../data/datasets/tr_unprocessed_144x256.pt")
+    torch.save(tr_dataset, "../data/datasets/tr_unprocessed_single_144x256.pt")
     print("tr_data saved")
 
     print("making va_data")
     va_dataset = BasicDataset(train="Valid")
     print("saving va_data")
-    torch.save(va_dataset, "../data/datasets/va_unprocessed_bot3_144x256.pt")
+    torch.save(va_dataset, "../data/datasets/va_unprocessed_single_bot3_144x256.pt")
     print("va_data saved")
 
     '''print("loading tr_data")

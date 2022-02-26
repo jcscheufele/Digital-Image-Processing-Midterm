@@ -133,8 +133,7 @@ def createTransform():
 class BasicDataset(Dataset):
     def __init__(self, train):
         self.train = train
-        self.X_day = []
-        self.X_night = []
+        self.X = []
         self.y = []
         self.transform = createTransform()
         self.makeXnY()
@@ -168,8 +167,14 @@ class BasicDataset(Dataset):
             day = div(day, 255)
             night = div(night, 255)
 
-            self.X_day.append(day)
-            self.X_night.append(night)
+            day = torch.reshape(day, (1,144, 256))
+            #print('Day', day.shape)
+            night = torch.reshape(night, (1,144, 256))
+            #print('night', night.shape)
+            input = cat((day, night), axis=0)
+            #print('input',input.shape)
+
+            self.X.append(input)
             self.y.append(1.0)
             counter += 1
 
@@ -185,8 +190,15 @@ class BasicDataset(Dataset):
             day = div(day, 255)
             night = div(night, 255)
 
-            self.X_day.append(day)
-            self.X_night.append(night)
+            day = torch.reshape(day, (1,144, 256))
+            #print('Day', day.shape)
+            night = torch.reshape(night, (1,144, 256))
+            #print('night', night.shape)
+
+            input = cat((day, night), axis=0)
+            #print('input',input.shape)
+
+            self.X.append(input)
             self.y.append(0.0)
             counter += 1
         print("Completed")

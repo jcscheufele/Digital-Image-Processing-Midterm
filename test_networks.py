@@ -17,11 +17,11 @@ if __name__ == "__main__":
     print("making te_data")
     te_dataset = BasicDataset(train="Test")
     print("saving te_data")
-    torch.save(te_dataset, "../data/datasets/te_unprocessed_144x256.pt")
+    torch.save(te_dataset, "../data/datasets/te_unprocessed_single_144x256.pt")
     print("te_data saved")
 
     '''print("loading te_data")
-    te_dataset = torch.load("../data/datasets/te_unprocessed_240x426.pt")
+    te_dataset = torch.load("../data/datasets/te_unprocessed_single_240x426.pt")
     print("te_data loaded")'''
 
     batch_size = 128
