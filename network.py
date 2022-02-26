@@ -107,7 +107,7 @@ def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, ke
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X))), min(len(X), 5))
+            range = sample(list(np.arange(len(X))), min(len(X), 20))
             for idx in range:
                 save = {"Valid Key": key, "Sample Epoch":epoch,"Sample Valid Loss":loss,
                 "Sample Valid Image Day": wandb.Image(X[idx][0]), "Sample Valid Image Night": wandb.Image(X[idx][1]),

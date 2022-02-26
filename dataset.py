@@ -142,7 +142,7 @@ class BasicDataset(Dataset):
         return len(self.y)
 
     def __getitem__(self, idx):
-        return self.X_day[idx], self.X_night[idx], as_tensor(self.y[idx], dtype=torch.float32)
+        return self.X[idx], as_tensor(self.y[idx], dtype=torch.float32)
 
     def makeXnY(self):
         print("Making Positives...")

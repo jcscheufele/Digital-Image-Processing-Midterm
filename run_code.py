@@ -14,7 +14,7 @@ if __name__ == "__main__":
     name = "Using_Val_full_singleConv_500"
     wandb.run.name = name
 
-    '''print("making tr_data")
+    print("making tr_data")
     tr_dataset = BasicDataset(train="Train")
     print("saving tr_data")
     torch.save(tr_dataset, "../data/datasets/tr_unprocessed_single_144x256.pt")
@@ -24,15 +24,15 @@ if __name__ == "__main__":
     va_dataset = BasicDataset(train="Valid")
     print("saving va_data")
     torch.save(va_dataset, "../data/datasets/va_unprocessed_single_bot3_144x256.pt")
-    print("va_data saved")'''
+    print("va_data saved")
 
-    print("loading tr_data")
+    '''print("loading tr_data")
     tr_dataset = torch.load("../data/datasets/tr_unprocessed_single_144x256.pt")
     print("tr_data loaded")
 
     print("loading va_data")
     va_dataset = torch.load("../data/datasets/va_unprocessed_single_bot3_144x256.pt")
-    print("va_data loaded")
+    print("va_data loaded")'''
    
     batch_size = 128
     epochs = 500
@@ -60,8 +60,8 @@ if __name__ == "__main__":
     train_loader = DataLoader(tr_dataset, batch_size=batch_size, sampler=train_sampler)
     validation_loader = DataLoader(va_dataset, batch_size=batch_size, sampler=valid_sampler)
 
-    print("Train imgs: ", len(train_loader))
-    print("Validation imgs: ", len(validation_loader))
+    print("Train imgs: ", len(train_loader.dataset))
+    print("Validation imgs: ", len(validation_loader.dataset))
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
