@@ -11,6 +11,101 @@ import imutils
 import cv2
 import matplotlib as plt
 
+
+def tr_get_next_positive_path():
+    for locations in train_dirs:
+        indv_loc_dir = os.listdir(TRAIN_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        night = indv_loc_dir[1]
+        day_imgs = os.listdir(TRAIN_DATA + "/" + locations + "/" + day)
+        night_imgs = os.listdir(TRAIN_DATA + "/" + locations + "/" + night)
+        for dayimg in day_imgs:
+            for nightimg in night_imgs:
+                daypath = TRAIN_DATA + "/" + locations + "/" + day + "/" + dayimg
+                nightpath = TRAIN_DATA + "/" + locations + "/" + night + "/" + nightimg
+                yield daypath, nightpath
+
+def tr_get_next_negative_path():
+    for locations in train_dirs:
+        not_curr = set(train_dirs)-set([locations])
+        indv_loc_dir = os.listdir(TRAIN_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        day_imgs = os.listdir(TRAIN_DATA + "/" + locations + "/" + day)
+        for dayimg in day_imgs:
+            daypath = TRAIN_DATA + "/" + locations + "/" + day + "/" + dayimg
+            for local in not_curr:
+                indv_loc_dir = os.listdir(TRAIN_DATA + "/" + local)
+                night = indv_loc_dir[1]
+                night_imgs = os.listdir(TRAIN_DATA + "/" + local + "/" + night)
+                imgs = choices(night_imgs, k=5)
+                for nightimg in imgs:
+                    daypath = TRAIN_DATA + "/" + locations + "/" + day + "/" + dayimg
+                    nightpath = TRAIN_DATA + "/" + local + "/" + night + "/" + nightimg
+                    yield daypath, nightpath
+
+def te_get_next_positive_path():
+    for locations in test_dirs:
+        indv_loc_dir = os.listdir(TEST_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        night = indv_loc_dir[1]
+        day_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + day)
+        night_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + night)
+        for dayimg in day_imgs:
+            for nightimg in night_imgs:
+                daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+                nightpath = TEST_DATA + "/" + locations + "/" + night + "/" + nightimg
+                yield daypath, nightpath
+
+def te_get_next_negative_path():
+    for locations in test_dirs:
+        not_curr = set(test_dirs)-set([locations])
+        indv_loc_dir = os.listdir(TEST_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        day_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + day)
+        for dayimg in day_imgs:
+            daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+            for local in not_curr:
+                indv_loc_dir = os.listdir(TEST_DATA + "/" + local)
+                night = indv_loc_dir[1]
+                night_imgs = os.listdir(TEST_DATA + "/" + local + "/" + night)
+                imgs = choices(night_imgs, k=5)
+                for nightimg in imgs:
+                    daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+                    nightpath = TEST_DATA + "/" + local + "/" + night + "/" + nightimg
+                    yield daypath, nightpath
+
+def va_get_next_positive_path():
+    for locations in valid_dirs:
+        indv_loc_dir = os.listdir(VALID_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        night = indv_loc_dir[1]
+        day_imgs = os.listdir(VALID_DATA + "/" + locations + "/" + day)
+        night_imgs = os.listdir(VALID_DATA + "/" + locations + "/" + night)
+        for dayimg in day_imgs:
+            for nightimg in night_imgs:
+                daypath = VALID_DATA + "/" + locations + "/" + day + "/" + dayimg
+                nightpath = VALID_DATA + "/" + locations + "/" + night + "/" + nightimg
+                yield daypath, nightpath
+
+def va_get_next_negative_path():
+    for locations in valid_dirs:
+        not_curr = set(valid_dirs)-set([locations])
+        indv_loc_dir = os.listdir(VALID_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        day_imgs = os.listdir(VALID_DATA + "/" + locations + "/" + day)
+        for dayimg in day_imgs:
+            daypath = VALID_DATA + "/" + locations + "/" + day + "/" + dayimg
+            for local in not_curr:
+                indv_loc_dir = os.listdir(VALID_DATA + "/" + local)
+                night = indv_loc_dir[1]
+                night_imgs = os.listdir(VALID_DATA + "/" + local + "/" + night)
+                imgs = choices(night_imgs, k=5)
+                for nightimg in imgs:
+                    daypath = VALID_DATA + "/" + locations + "/" + day + "/" + dayimg
+                    nightpath = VALID_DATA + "/" + local + "/" + night + "/" + nightimg
+                    yield daypath, nightpath
+
+
 day = cv2.imread('../data/train/00000850/Day/20151101_142506.jpg')
 night = cv2.imread('../data/train/00000850/Night/20151101_072507.jpg')
 h = 144
