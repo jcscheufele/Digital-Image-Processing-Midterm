@@ -41,8 +41,8 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
     cumulative_loss = 0
     ret = []
 
-    for batch, (X_day, X_night, y) in enumerate(dataloader):
-        pred = model((X_day.to(device), X_night.to(device)))
+    for batch, (X, y) in enumerate(dataloader):
+        pred = model(X.to(device))
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         # Backpropagation
@@ -50,10 +50,10 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
         loss.backward()
         optimizer.step()
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X))), min(len(X), 5))
             for idx in range:
                 save = {"Train Key": key, "Sample Epoch":epoch,"Sample Training Loss":loss,
-                "Sample Training Image Day": wandb.Image(X_day[idx]), "Sample Training Image Night": wandb.Image(X_night[idx]),
+                "Sample Training Image Day": wandb.Image(X[idx][0]), "Sample Training Image Night": wandb.Image(X[idx][1]),
                 "Sample Training Pred": pred[idx].item(), "Sample Training Truth": y[idx].item()}
                 ret.append(save)
                 key+=1
@@ -74,15 +74,15 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
     ret = []
 
     with no_grad():
-      for batch, (X_day, X_night, y) in enumerate(dataloader):
-        pred = model((X_day.to(device), X_night.to(device)))
+      for batch, (X, y) in enumerate(dataloader):
+        pred = model(X.to(device))
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X))), min(len(X), 5))
             for idx in range:
                 save = {"Test Key": key, "Sample Epoch":epoch,"Sample Testing Loss":loss,
-                "Sample Testing Image Day": wandb.Image(X_day[idx]), "Sample Testing Image Night": wandb.Image(X_night[idx]),
+                "Sample Testing Image Day": wandb.Image(X[idx][0]), "Sample Testing Image Night": wandb.Image(X[idx][1]),
                 "Sample Testing Pred": pred[idx].item(), "Sample Testing Truth": y[idx].item()}
                 ret.append(save)
                 key+=1
@@ -102,15 +102,15 @@ def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, ke
     ret = []
 
     with no_grad():
-      for batch, (X_day, X_night, y) in enumerate(dataloader):
-        pred = model((X_day.to(device), X_night.to(device)))
+      for batch, (X, y) in enumerate(dataloader):
+        pred = model(X.to(device))
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X))), min(len(X), 5))
             for idx in range:
                 save = {"Valid Key": key, "Sample Epoch":epoch,"Sample Valid Loss":loss,
-                "Sample Valid Image Day": wandb.Image(X_day[idx]), "Sample Valid Image Night": wandb.Image(X_night[idx]),
+                "Sample Valid Image Day": wandb.Image(X[idx][0]), "Sample Valid Image Night": wandb.Image(X[idx][1]),
                 "Sample Valid Pred": pred[idx].item(), "Sample Valid Truth": y[idx].item()}
                 ret.append(save)
                 key+=1

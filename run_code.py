@@ -11,10 +11,10 @@ import telegram_send
 
 if __name__ == "__main__":
     wandb.init(project="CS545_Midterm", entity="jcscheufele")
-    name = "Using_Val_full_singleConv"
+    name = "Using_Val_full_singleConv_500"
     wandb.run.name = name
 
-    print("making tr_data")
+    '''print("making tr_data")
     tr_dataset = BasicDataset(train="Train")
     print("saving tr_data")
     torch.save(tr_dataset, "../data/datasets/tr_unprocessed_single_144x256.pt")
@@ -24,18 +24,18 @@ if __name__ == "__main__":
     va_dataset = BasicDataset(train="Valid")
     print("saving va_data")
     torch.save(va_dataset, "../data/datasets/va_unprocessed_single_bot3_144x256.pt")
-    print("va_data saved")
+    print("va_data saved")'''
 
-    '''print("loading tr_data")
-    tr_dataset = torch.load("../data/datasets/tr_unprocessed_240x426.pt")
-    print("tr_data loaded")'''
+    print("loading tr_data")
+    tr_dataset = torch.load("../data/datasets/tr_unprocessed_single_144x256.pt")
+    print("tr_data loaded")
 
-    '''print("loading va_data")
-    te_dataset = torch.load("../data/datasets/va_unprocessed_240x426.pt")
-    print("va_data loaded")'''
+    print("loading va_data")
+    va_dataset = torch.load("../data/datasets/va_unprocessed_single_bot3_144x256.pt")
+    print("va_data loaded")
    
     batch_size = 128
-    epochs = 11
+    epochs = 500
     learningrate = 0.001
 
     wandb.config = {
