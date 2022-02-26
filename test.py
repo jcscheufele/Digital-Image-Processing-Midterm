@@ -4,6 +4,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from random import choices
 
+from skimage.metrics import structural_similarity as compare_ssim
+import imutils
+
 TRAIN_DATA = '../data/train'
 TEST_DATA = '../data/test'
 
@@ -41,13 +44,13 @@ def get_next_negative_path():
                     nightpath = TRAIN_DATA + "/" + local + "/" + night + "/" + nightimg
                     yield daypath, nightpath
 
-pos_counter = 0
+'''pos_counter = 0
 for img_paths in get_next_positive_path():
     print(pos_counter, img_paths, 1)
     pos_counter +=1
     img = cv2.imread(img_paths[0])
     img1 = cv2.imread(img_paths[1])
-    print(img.shape, img1.shape)
+    print(img.shape, img1.shape)'''
  
 
 '''neg_counter = 0
@@ -60,3 +63,6 @@ for img_paths in get_next_negative_path():
     indv_dir = os.listdir(TEST_DATA + "/" + dir)
     for img in indv_dir:
         print(TEST_DATA + "/" + dir + "/" + img)'''
+
+
+def similarityMatcher():

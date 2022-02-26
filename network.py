@@ -7,102 +7,87 @@ from random import sample
 import torch
 
 class BasicNetwork(nn.Module):
-    def __init__(self, in_features, out_features):
+    def __init__(self):
         super(BasicNetwork,self).__init__()
-        self.wider_stack = nn.Sequential(OrderedDict([ #Creating an ordered dictionary of the 3 layers we want in our NN
-            ('Input', nn.Linear(in_features, 8192)),
-            ('Relu 1', nn.ReLU()),
-            ('Hidden Linear 1', nn.Linear(8192, 4096)),
-            ('Relu 2', nn.ReLU()),
-            ('Hidden Linear 2', nn.Linear(4096, 1024)),
-            ('Relu 3', nn.ReLU()),
-            ('Hidden Linear 3', nn.Linear(1024, 16)),
-            ('Relu 4', nn.ReLU()),
-            ('Output', nn.Linear(8, out_features))
-        ]))
         self.day_convolution = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.Conv2d(1, 8, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32,64,kernel_size=3,stride=1,padding=1),
+            nn.Conv2d(8, 8,kernel_size=3,stride=1,padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
-            nn.Conv2d(64,128,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128,128,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
-            nn.Conv2d(128,256,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256,256,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
+            nn.MaxPool2d(8, 8),
             nn.Flatten(),
-            nn.Linear(814080,1024),
+            nn.Linear(12720,1024),
             nn.ReLU(),
-            nn.Linear(1024, 512),
+            nn.Linear(1024, 256),
             nn.ReLU(),
-            nn.Linear(512,out_features)
-            )
+            nn.Linear(256, 64)
+        )
         self.night_convolution = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.Conv2d(1, 8, kernel_size=3, padding=1),
             nn.ReLU(),
-            nn.Conv2d(32,64,kernel_size=3,stride=1,padding=1),
+            nn.Conv2d(8, 8, kernel_size=3,stride=1,padding=1),
             nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
-            nn.Conv2d(64,128,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.Conv2d(128,128,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
-            nn.Conv2d(128,256,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.Conv2d(256,256,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(2,2),
-
+            nn.MaxPool2d(8,8),
             nn.Flatten(),
-            nn.Linear(814080,1024),
+            nn.Linear(12720,1024),
             nn.ReLU(),
-            nn.Linear(1024, 512),
+            nn.Linear(1024, 256),
             nn.ReLU(),
-            nn.Linear(512,out_features)
-            )
+            nn.Linear(256,64)
+        )
+        self.single_convolution = nn.Sequential(
+            nn.Conv2d(2, 16, kernel_size=3, padding=1),
+            nn.ReLU(),
+            nn.Conv2d(16, 8, kernel_size=3,stride=1,padding=1),
+            nn.ReLU(),
+            nn.MaxPool2d(8,8),
+            nn.Flatten(),
+            nn.Linear(12720,1024),
+            nn.ReLU(),
+            nn.Linear(1024, 256),
+            nn.ReLU(),
+            nn.Linear(256,64)
+        )
+        self.wider_stack = nn.Sequential(OrderedDict([ #Creating an ordered dictionary of the 3 layers we want in our NN
+            ('Input', nn.Linear(128, 64)),
+            ('Relu 1', nn.ReLU()),
+            ('Hidden Linear 1', nn.Linear(64, 16)),
+            ('Relu 2', nn.ReLU()),
+            ('Raw Output', nn.Linear(16, 1)),
+            ("Sigmoid", nn.Sigmoid())
+        ]))
     #Defining how the data flows through the layer, PyTorch will call this we will never have to call it
     def forward(self, x):
-        logits1 = self.day_convolution(x[0])
+        '''logits1 = self.day_convolution(x[0])
         logits2 = self.night_convolution(x[1])
-        logits3 = cat(logits1, logits2)
+        #print(logits1.shape, logits2.shape)
+        logits3 = cat((logits1, logits2), 1)
+        #print(logits3.shape)
         logits4 = self.wider_stack(logits3)
-        return logits4
+        return logits4'''
+        logits = self.single_convolution(x)
+        logits = self.wider_stack(logits)
+        return logits
 
 def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_save, key):
     batches = int(len(dataloader.dataset)*.8/bs)
     cumulative_loss = 0
     ret = []
 
-    for batch, (X, y) in enumerate(dataloader):
-        pred = model(X.to(device))
-        loss = loss_fn(pred, y.to(device))
+    for batch, (X_day, X_night, y) in enumerate(dataloader):
+        pred = model((X_day.to(device), X_night.to(device)))
+        loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         # Backpropagation
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if will_save and (batch % 10 == 0):
-            range = sample(list(np.arange(len(X))), min(len(X), 20))
+        if will_save and (batch == batches):
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
             for idx in range:
-                new = torch.reshape(X[idx][:-3], (50,2))
-                loc = X[idx][-3:]
                 save = {"Train Key": key, "Sample Epoch":epoch,"Sample Training Loss":loss,
-                "Diffs": new, 
-                "Sample Training Latitude":loc[0], "Sample Training Longitude":loc[1], "Sample Training Altitude":loc[2], 
-                "Sample Training Pred Lat": pred[idx][0].item(), "Sample Training Pred Lon": pred[idx][1].item(), "Sample Training Pred Alt": pred[idx][2].item(), 
-                "Sample Training Truth Lat": y[idx][0].item(), "Sample Training Truth Lon": y[idx][1].item(), "Sample Training Truth Alt": y[idx][2].item()}
+                "Sample Training Image Day": wandb.Image(X_day[idx]), "Sample Training Image Night": wandb.Image(X_night[idx]),
+                "Sample Training Pred": pred[idx].item(), "Sample Training Truth": y[idx].item()}
                 ret.append(save)
                 key+=1
             row = f"{epoch} [ {batch}/{batches} ] Loss: {loss} SAVED\n"
@@ -122,20 +107,16 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
     ret = []
 
     with no_grad():
-      for batch, (X, y) in enumerate(dataloader):
-        pred = model(X.to(device))
-        loss = loss_fn(pred, y.to(device))
+      for batch, (X_day, X_night, y) in enumerate(dataloader):
+        pred = model((X_day.to(device), X_night.to(device)))
+        loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
-        if will_save and (batch % 5 == 0):
-            range = sample(list(np.arange(len(X))), min(len(X), 20))
+        if will_save and (batch == batches):
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
             for idx in range:
-                new = torch.reshape(X[idx][:-3], (50,2))
-                loc = X[idx][-3:]
-                save = {"Test Key": key, "Sample Epoch": epoch, "Sample Testing Loss":loss,
-                "Diffs": new, 
-                "Sample Testing Latitude":loc[0], "Sample Testing Longitude":loc[1], "Sample Testing Altitude":loc[2], 
-                "Sample Testing Pred Lat": pred[idx][0].item(), "Sample Testing Pred Lon": pred[idx][1].item(), "Sample Testing Pred Alt": pred[idx][2].item(), 
-                "Sample Testing Truth Lat": y[idx][0].item(),   "Sample Testing Truth Lon": y[idx][1].item(),   "Sample Testing Truth Alt": y[idx][2].item()}
+                save = {"Test Key": key, "Sample Epoch":epoch,"Sample Testing Loss":loss,
+                "Sample Testing Image Day": wandb.Image(X_day[idx]), "Sample Testing Image Night": wandb.Image(X_night[idx]),
+                "Sample Testing Pred": pred[idx].item(), "Sample Testing Truth": y[idx].item()}
                 ret.append(save)
                 key+=1
             row = f"{epoch} [ {batch}/{batches} ] Loss: {loss} SAVED\n"

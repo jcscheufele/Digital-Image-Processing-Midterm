@@ -24,7 +24,7 @@ TEST_DATA = '../data/test'
 train_dirs = os.listdir(TRAIN_DATA)
 test_dirs = os.listdir(TEST_DATA)
 
-def get_next_positive_path():
+def tr_get_next_positive_path():
     for locations in train_dirs:
         indv_loc_dir = os.listdir(TRAIN_DATA + "/" + locations)
         day = indv_loc_dir[0]
@@ -37,7 +37,7 @@ def get_next_positive_path():
                 nightpath = TRAIN_DATA + "/" + locations + "/" + night + "/" + nightimg
                 yield daypath, nightpath
 
-def get_next_negative_path():
+def tr_get_next_negative_path():
     for locations in train_dirs:
         not_curr = set(train_dirs)-set([locations])
         indv_loc_dir = os.listdir(TRAIN_DATA + "/" + locations)
@@ -55,6 +55,37 @@ def get_next_negative_path():
                     nightpath = TRAIN_DATA + "/" + local + "/" + night + "/" + nightimg
                     yield daypath, nightpath
 
+def te_get_next_positive_path():
+    for locations in test_dirs:
+        indv_loc_dir = os.listdir(TEST_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        night = indv_loc_dir[1]
+        day_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + day)
+        night_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + night)
+        for dayimg in day_imgs:
+            for nightimg in night_imgs:
+                daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+                nightpath = TEST_DATA + "/" + locations + "/" + night + "/" + nightimg
+                yield daypath, nightpath
+
+def te_get_next_negative_path():
+    for locations in test_dirs:
+        not_curr = set(test_dirs)-set([locations])
+        indv_loc_dir = os.listdir(TEST_DATA + "/" + locations)
+        day = indv_loc_dir[0]
+        day_imgs = os.listdir(TEST_DATA + "/" + locations + "/" + day)
+        for dayimg in day_imgs:
+            daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+            for local in not_curr:
+                indv_loc_dir = os.listdir(TEST_DATA + "/" + local)
+                night = indv_loc_dir[1]
+                night_imgs = os.listdir(TEST_DATA + "/" + local + "/" + night)
+                imgs = choices(night_imgs, k=5)
+                for nightimg in imgs:
+                    daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
+                    nightpath = TEST_DATA + "/" + local + "/" + night + "/" + nightimg
+                    yield daypath, nightpath
+
 def createTransform():
     p144 = (144, 256)
     p240 = (240, 426)
@@ -62,13 +93,15 @@ def createTransform():
     p480 = (480, 848)
     crop = (355, 644)
     listOfTransforms = [
-        transforms.Resize(p240)
+        transforms.Resize(p144)
         ]
     return transforms.Compose(listOfTransforms)
 
 class BasicDataset(Dataset):
-    def __init__(self):
-        self.X = []
+    def __init__(self, train):
+        self.train = train
+        self.X_day = []
+        self.X_night = []
         self.y = []
         self.transform = createTransform()
         self.makeXnY()
@@ -77,34 +110,48 @@ class BasicDataset(Dataset):
         return len(self.y)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.y[idx]
+        return self.X_day[idx], self.X_night[idx], as_tensor(self.y[idx], dtype=torch.float32)
 
     def makeXnY(self):
         print("Making Positives...")
         counter = 0
-        for img_paths in get_next_positive_path():
-            print(f"img pair {counter}")
-            img1 = read_image(img_paths[0])
-            img2 = read_image(img_paths[1])
+        if self.train:
+            pos_gen = tr_get_next_positive_path
+            neg_gen = tr_get_next_negative_path
+        else:
+            pos_gen = te_get_next_positive_path
+            neg_gen = te_get_next_negative_path
+        for img_paths in pos_gen():
+            print(f"img pair {counter}", end="\r")
+            day = read_image(img_paths[0], mode=ImageReadMode.GRAY)
+            night = read_image(img_paths[1], mode=ImageReadMode.GRAY)
 
-            img1 = self.transform(img1)
-            img2 = self.transform(img2)
+            day = self.transform(day)
+            night = self.transform(night)
 
-            self.X.append(img1, img2)
-            self.y.append(1)
+            day = div(day, 255)
+            night = div(night, 255)
+
+            self.X_day.append(day)
+            self.X_night.append(night)
+            self.y.append(1.0)
             counter += 1
 
         print("Making Negatives...")
-        for img_paths in get_next_negative_path():
-            print(f"img pair {counter}")
-            img1 = read_image(img_paths[0])
-            img2 = read_image(img_paths[1])
+        for img_paths in neg_gen():
+            print(f"img pair {counter}", end="\r")
+            day = read_image(img_paths[0], mode=ImageReadMode.GRAY)
+            night = read_image(img_paths[1], mode=ImageReadMode.GRAY)
 
-            img1 = self.transform(img1)
-            img2 = self.transform(img2)
+            day = self.transform(day)
+            night = self.transform(night)
 
-            self.X.append(img1, img2)
-            self.y.append(0)
+            day = div(day, 255)
+            night = div(night, 255)
+
+            self.X_day.append(day)
+            self.X_night.append(night)
+            self.y.append(0.0)
             counter += 1
         print("Completed")
 
