@@ -16,7 +16,7 @@ class BasicNetwork(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(8, 8),
             nn.Flatten(),
-            nn.Linear(12720,1024),
+            nn.Linear(4608,1024),
             nn.ReLU(),
             nn.Linear(1024, 256),
             nn.ReLU(),
@@ -29,20 +29,7 @@ class BasicNetwork(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(8,8),
             nn.Flatten(),
-            nn.Linear(12720,1024),
-            nn.ReLU(),
-            nn.Linear(1024, 256),
-            nn.ReLU(),
-            nn.Linear(256,64)
-        )
-        self.single_convolution = nn.Sequential(
-            nn.Conv2d(2, 16, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(16, 8, kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(8,8),
-            nn.Flatten(),
-            nn.Linear(12720,1024),
+            nn.Linear(4608,1024),
             nn.ReLU(),
             nn.Linear(1024, 256),
             nn.ReLU(),
@@ -58,19 +45,19 @@ class BasicNetwork(nn.Module):
         ]))
     #Defining how the data flows through the layer, PyTorch will call this we will never have to call it
     def forward(self, x):
-        '''logits1 = self.day_convolution(x[0])
+        logits1 = self.day_convolution(x[0])
         logits2 = self.night_convolution(x[1])
         #print(logits1.shape, logits2.shape)
         logits3 = cat((logits1, logits2), 1)
         #print(logits3.shape)
         logits4 = self.wider_stack(logits3)
-        return logits4'''
-        logits = self.single_convolution(x)
+        return logits4
+        '''logits = self.single_convolution(x)
         logits = self.wider_stack(logits)
-        return logits
+        return logits'''
 
 def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_save, key):
-    batches = int(len(dataloader.dataset)*.8/bs)
+    batches = int(len(dataloader.dataset)/bs)
     cumulative_loss = 0
     ret = []
 
@@ -102,7 +89,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
 
 #Runs through the whole dataset and gives final performace metrics
 def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
-    batches = int(len(dataloader.dataset)*.2/bs)
+    batches = int(len(dataloader.dataset)/bs)
     cumulative_loss = 0
     ret = []
 
@@ -126,5 +113,33 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
             print(row)
 
     averages_1 = f"End of Testing \n Test Error: \n Testing Avg loss: {(cumulative_loss/batches):>8f}\n"
+    print(averages_1)
+    return ret, cumulative_loss/batches, key
+
+def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
+    batches = int(len(dataloader.dataset)/bs)
+    cumulative_loss = 0
+    ret = []
+
+    with no_grad():
+      for batch, (X_day, X_night, y) in enumerate(dataloader):
+        pred = model((X_day.to(device), X_night.to(device)))
+        loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
+        cumulative_loss += loss
+        if will_save and (batch == batches):
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            for idx in range:
+                save = {"Valid Key": key, "Sample Epoch":epoch,"Sample Valid Loss":loss,
+                "Sample Valid Image Day": wandb.Image(X_day[idx]), "Sample Valid Image Night": wandb.Image(X_night[idx]),
+                "Sample Valid Pred": pred[idx].item(), "Sample Valid Truth": y[idx].item()}
+                ret.append(save)
+                key+=1
+            row = f"{epoch} [ {batch}/{batches} ] Loss: {loss} SAVED\n"
+            print(row) 
+        else:
+            row = f"{epoch} [ {batch}/{batches} ] Loss: {loss}\n"
+            print(row)
+
+    averages_1 = f"End of Validation \n Validation Error: \n Validation Avg loss: {(cumulative_loss/batches):>8f}\n"
     print(averages_1)
     return ret, cumulative_loss/batches, key
