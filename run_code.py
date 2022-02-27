@@ -11,7 +11,7 @@ import telegram_send
 
 if __name__ == "__main__":
     wandb.init(project="CS545_Midterm", entity="jcscheufele")
-    name = "Using_Val_full_splitConv_500"
+    name = "Using_Val_full_splitLinear_500"
     wandb.run.name = name
     print(name)
 

@@ -9,31 +9,23 @@ import torch
 class BasicNetwork(nn.Module):
     def __init__(self):
         super(BasicNetwork,self).__init__()
-        self.day_convolution = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(8, 8,kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(8, 8),
+        self.day_linear = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(4608,1024),
+            nn.Linear(36864,1024),
             nn.ReLU(),
             nn.Linear(1024, 256),
             nn.ReLU(),
-            nn.Linear(256, 64)
+            nn.Linear(256, 64),
+            nn.ReLU()
         )
-        self.night_convolution = nn.Sequential(
-            nn.Conv2d(1, 8, kernel_size=3, padding=1),
-            nn.ReLU(),
-            nn.Conv2d(8, 8, kernel_size=3,stride=1,padding=1),
-            nn.ReLU(),
-            nn.MaxPool2d(8,8),
+        self.night_linear = nn.Sequential(
             nn.Flatten(),
-            nn.Linear(4608,1024),
+            nn.Linear(36864,1024),
             nn.ReLU(),
             nn.Linear(1024, 256),
             nn.ReLU(),
-            nn.Linear(256,64)
+            nn.Linear(256,64),
+            nn.ReLU()
         )
         self.wider_stack = nn.Sequential(OrderedDict([ #Creating an ordered dictionary of the 3 layers we want in our NN
             ('Input', nn.Linear(128, 64)),
