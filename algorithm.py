@@ -1,4 +1,4 @@
-from skimage.metrics import structural_similarity as compare_ssim
+from skimage.metrics import structural_similarity
 import imutils
 import cv2, os
 
@@ -105,9 +105,9 @@ def va_get_next_negative_path():
 
 
 day = cv2.imread('../data/train/00000850/Day/20151101_142506.jpg')
-night = cv2.imread('../data/train/00001323/Night/20151101_221025.jpg') #/data/train/00000850/Night/20151101_072507.jpg
-h = 500
-w = 1000
+night = cv2.imread('../data/train/00001323/Night/20151101_221025.jpg') #/data/train/00000850/Night/20151101_072507.jpg /data/train/00001323/Night/20151101_221025.jpg
+h = 144
+w = 256
 print("read images")
 re = (w,h)
 day = cv2.resize(day ,re, interpolation = cv2.INTER_AREA)
@@ -117,9 +117,9 @@ night = cv2.resize(night ,re, interpolation = cv2.INTER_AREA)
 day_g = cv2.cvtColor(day, cv2.COLOR_BGR2GRAY)
 night_g = cv2.cvtColor(night, cv2.COLOR_BGR2GRAY)
 print("fixed images")
-(score, diff) = compare_ssim(day_g, night_g, full=True)
+#(score, diff) = compare_ssim(day_g, night_g, full=True)
 print("compared images")
-#(score,diff)=compare_ssim(day_g, night_g, multichannel=True, gaussian_weights=True, sigma=2, use_sample_covariance=False, data_range=255,full=True)
+(score,diff)=structural_similarity(day_g, night_g, gaussian_weights=True, sigma=0.1, use_sample_covariance=False, data_range=255,full=True)
 diff = (diff * 255).astype("uint8")
 print("SSIM: {}".format(score))
 
@@ -140,8 +140,8 @@ for c in cnts:
 # show the output images
 print('writing images')
 
-cv2.imwrite("testImgs/day.png", day)
-cv2.imwrite("testImgs/night.png", night)
-cv2.imwrite("testImgs/diff.png", diff)
-cv2.imwrite("testImgs/thresh.png", thresh)
+cv2.imwrite("testImgs/day1.png", day)
+cv2.imwrite("testImgs/night1.png", night)
+cv2.imwrite("testImgs/diff1.png", diff)
+cv2.imwrite("testImgs/thresh1.png", thresh)
 cv2.waitKey(0)
