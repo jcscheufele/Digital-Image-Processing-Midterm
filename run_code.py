@@ -11,7 +11,7 @@ import telegram_send
 
 if __name__ == "__main__":
     wandb.init(project="CS545_Midterm", entity="jcscheufele")
-    name = "Using_Val_full_splitLinear_500_2"
+    name = "Using_Val_full_splitLinear_500_lr_001"
     wandb.run.name = name
     print(name)
 
@@ -55,14 +55,16 @@ if __name__ == "__main__":
     np.random.shuffle(va_indices) #splits the dataset and assigns them to training and testing datasets
 
     # Creating PT data samplers and loaders:
-    train_sampler = SubsetRandomSampler(tr_indices)
-    valid_sampler = SubsetRandomSampler(va_indices)
+    tr_dataset_size = int(np.floor(tr_dataset_size*.1))
+    va_dataset_size = int(np.floor(va_dataset_size*.1))
+    train_sampler = SubsetRandomSampler(tr_indices[:tr_dataset_size])
+    valid_sampler = SubsetRandomSampler(va_indices[:va_dataset_size])
 
     train_loader = DataLoader(tr_dataset, batch_size=batch_size, sampler=train_sampler)
     validation_loader = DataLoader(va_dataset, batch_size=batch_size, sampler=valid_sampler)
 
-    print("Train imgs: ", len(train_loader))
-    print("Validation imgs: ", len(validation_loader))
+    print("Train imgs: ", tr_dataset_size)
+    print("Validation imgs: ", va_dataset_size)
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -84,8 +86,8 @@ if __name__ == "__main__":
             else:
                 will_save = False
 
-            training_dicts, train_error, tr_key = train_loop(train_loader, model, loss_fn, optimizer, device, epoch, batch_size, will_save, tr_key)
-            valid_dicts, valid_error, val_key = validation_loop(validation_loader, model, loss_fn, device, epoch, batch_size, will_save, val_key)
+            training_dicts, train_error, tr_key = train_loop(train_loader, model, loss_fn, optimizer, device, epoch, tr_dataset_size/batch_size, will_save, tr_key)
+            valid_dicts, valid_error, val_key = validation_loop(validation_loader, model, loss_fn, device, epoch, va_dataset_size/batch_size, will_save, val_key)
             if will_save:
                 for dict1, dict2 in zip(training_dicts, valid_dicts):
                     wandb.log(dict1)

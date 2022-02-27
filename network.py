@@ -48,8 +48,8 @@ class BasicNetwork(nn.Module):
         logits = self.wider_stack(logits)
         return logits'''
 
-def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_save, key):
-    batches = int(len(dataloader.dataset)/bs)
+def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, size, will_save, key):
+    batches = int(np.floor(size))
     cumulative_loss = 0
     ret = []
 
@@ -62,7 +62,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
         loss.backward()
         optimizer.step()
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 100))
             for idx in range:
                 save = {"Train Key": key, "Sample Epoch":epoch,"Sample Training Loss":loss,
                 "Sample Training Image Day": wandb.Image(X_day[idx]), "Sample Training Image Night": wandb.Image(X_night[idx]),
@@ -80,8 +80,8 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
     return ret, cumulative_loss/batches, key
 
 #Runs through the whole dataset and gives final performace metrics
-def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
-    batches = int(len(dataloader.dataset)/bs)
+def test_loop(dataloader, model, loss_fn, device, epoch, size, will_save, key):
+    batches = int(np.floor(size))
     cumulative_loss = 0
     ret = []
 
@@ -91,7 +91,7 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 100))
             for idx in range:
                 save = {"Test Key": key, "Sample Epoch":epoch,"Sample Testing Loss":loss,
                 "Sample Testing Image Day": wandb.Image(X_day[idx]), "Sample Testing Image Night": wandb.Image(X_night[idx]),
@@ -108,8 +108,8 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
     print(averages_1)
     return ret, cumulative_loss/batches, key
 
-def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
-    batches = int(len(dataloader.dataset)/bs)
+def validation_loop(dataloader, model, loss_fn, device, epoch, size, will_save, key):
+    batches = int(np.floor(size))
     cumulative_loss = 0
     ret = []
 
@@ -119,7 +119,7 @@ def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, ke
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 100))
             for idx in range:
                 save = {"Valid Key": key, "Sample Epoch":epoch,"Sample Valid Loss":loss,
                 "Sample Valid Image Day": wandb.Image(X_day[idx]), "Sample Valid Image Night": wandb.Image(X_night[idx]),
