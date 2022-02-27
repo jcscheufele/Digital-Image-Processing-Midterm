@@ -51,7 +51,7 @@ def tr_get_next_negative_path():
                 indv_loc_dir = os.listdir(TRAIN_DATA + "/" + local)
                 night = indv_loc_dir[1]
                 night_imgs = os.listdir(TRAIN_DATA + "/" + local + "/" + night)
-                imgs = choices(night_imgs, k=5)
+                imgs = choices(night_imgs, k=6)
                 for nightimg in imgs:
                     daypath = TRAIN_DATA + "/" + locations + "/" + day + "/" + dayimg
                     nightpath = TRAIN_DATA + "/" + local + "/" + night + "/" + nightimg
