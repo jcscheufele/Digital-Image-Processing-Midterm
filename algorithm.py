@@ -1,6 +1,8 @@
 from skimage.metrics import structural_similarity
 import imutils
 import cv2, os
+from random import choices
+import wandb
 
 TRAIN_DATA = '../data/train'
 TEST_DATA = '../data/test'
@@ -103,8 +105,49 @@ def va_get_next_negative_path():
                     nightpath = VALID_DATA + "/" + local + "/" + night + "/" + nightimg
                     yield daypath, nightpath
 
+def pipeline(dayPath, nightPath):
+    day = cv2.imread(dayPath)
+    night = cv2.imread(nightPath)
+    h = 144
+    w = 256
+    re = (w,h)
+    day = cv2.resize(day ,re, interpolation = cv2.INTER_AREA)
+    night = cv2.resize(night ,re, interpolation = cv2.INTER_AREA)
+    day_g = cv2.cvtColor(day, cv2.COLOR_BGR2GRAY)
+    night_g = cv2.cvtColor(night, cv2.COLOR_BGR2GRAY)
+    return day_g, night_g
 
-day = cv2.imread('../data/train/00000850/Day/20151101_142506.jpg')
+
+def similarity(day, night, type):
+    (score, diff) = structural_similarity(day, night, gaussian_weights=True, sigma=0.1, use_sample_covariance=False, data_range=255,full=True)
+    print("SSIM: {}".format(score))
+
+    diff = (diff * 255).astype("uint8")
+    thresh = cv2.threshold(diff, 0, 255, cv2.THRESH_BINARY_INV | cv2.THRESH_OTSU)[1]
+    cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = imutils.grab_contours(cnts)
+    print("got contours")
+
+    for c in cnts:
+        (x, y, w, h) = cv2.boundingRect(c)
+        cv2.rectangle(day, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        cv2.rectangle(night, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    
+    rec = {f"{type} Reference": wandb.Image(day), f"{type} Test":wandb.Image(night), f"{type} Thresh": wandb.Image(thresh), f"{type} Diff": wandb.Image(diff), f"{type} Score": score}
+    return rec
+    
+
+
+if __name__ == "__main__":
+    
+
+
+
+
+
+
+
+'''day = cv2.imread('../data/train/00000850/Day/20151101_142506.jpg')
 night = cv2.imread('../data/train/00001323/Night/20151101_221025.jpg') #/data/train/00000850/Night/20151101_072507.jpg /data/train/00001323/Night/20151101_221025.jpg
 h = 144
 w = 256
@@ -144,4 +187,4 @@ cv2.imwrite("testImgs/day1.png", day)
 cv2.imwrite("testImgs/night1.png", night)
 cv2.imwrite("testImgs/diff1.png", diff)
 cv2.imwrite("testImgs/thresh1.png", thresh)
-cv2.waitKey(0)
+cv2.waitKey(0)'''
