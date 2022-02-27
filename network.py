@@ -37,8 +37,8 @@ class BasicNetwork(nn.Module):
         ]))
     #Defining how the data flows through the layer, PyTorch will call this we will never have to call it
     def forward(self, x):
-        logits1 = self.day_convolution(x[0])
-        logits2 = self.night_convolution(x[1])
+        logits1 = self.day_linear(x[0])
+        logits2 = self.night_linear(x[1])
         #print(logits1.shape, logits2.shape)
         logits3 = cat((logits1, logits2), 1)
         #print(logits3.shape)
@@ -62,7 +62,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, device, epoch, bs, will_sa
         loss.backward()
         optimizer.step()
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
             for idx in range:
                 save = {"Train Key": key, "Sample Epoch":epoch,"Sample Training Loss":loss,
                 "Sample Training Image Day": wandb.Image(X_day[idx]), "Sample Training Image Night": wandb.Image(X_night[idx]),
@@ -91,7 +91,7 @@ def test_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, key):
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
             for idx in range:
                 save = {"Test Key": key, "Sample Epoch":epoch,"Sample Testing Loss":loss,
                 "Sample Testing Image Day": wandb.Image(X_day[idx]), "Sample Testing Image Night": wandb.Image(X_night[idx]),
@@ -119,7 +119,7 @@ def validation_loop(dataloader, model, loss_fn, device, epoch, bs, will_save, ke
         loss = loss_fn(pred, torch.reshape(y,(y.shape[0],1)).to(device))
         cumulative_loss += loss
         if will_save and (batch == batches):
-            range = sample(list(np.arange(len(X_day))), min(len(X_day), 5))
+            range = sample(list(np.arange(len(X_day))), min(len(X_day), 20))
             for idx in range:
                 save = {"Valid Key": key, "Sample Epoch":epoch,"Sample Valid Loss":loss,
                 "Sample Valid Image Day": wandb.Image(X_day[idx]), "Sample Valid Image Night": wandb.Image(X_night[idx]),

@@ -11,7 +11,7 @@ import telegram_send
 
 if __name__ == "__main__":
     wandb.init(project="CS545_Midterm", entity="jcscheufele")
-    name = "Using_Val_full_splitLinear_500"
+    name = "Using_Val_full_splitLinear_500_2"
     wandb.run.name = name
     print(name)
 
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         for epoch in range(epochs):
             print(f"Epoch {epoch+1}\n-------------------------------")
 
-            if (epoch % int(epochs/10)) == 0:
+            if (epoch % int(epochs/50)) == 0:
                 will_save = True
             else:
                 will_save = False
