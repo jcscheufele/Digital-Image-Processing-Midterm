@@ -139,7 +139,14 @@ def similarity(day, night, type):
 
 
 if __name__ == "__main__":
-    
+    gens = [tr_get_next_positive_path, tr_get_next_negative_path, va_get_next_positive_path, va_get_next_negative_path]
+    types = ['train_pos', 'train_neg', 'val_pos', 'val_neg']
+
+    for gen, type in zip(gens, types):
+        print(type)
+        for day, night in gen():
+            day_g, night_g = pipeline(day, night)
+            dict = similarity(day_g, night_g, type)
 
 
 
