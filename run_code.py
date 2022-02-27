@@ -35,8 +35,8 @@ if __name__ == "__main__":
     print("va_data loaded")'''
    
     batch_size = 128
-    epochs = 500
-    learningrate = 0.001
+    epochs = 50
+    learningrate = 0.0001
 
     wandb.config = {
         "learning_rate": learningrate,
