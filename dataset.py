@@ -82,8 +82,8 @@ def te_get_next_negative_path():
                 indv_loc_dir = os.listdir(TEST_DATA + "/" + local)
                 night = indv_loc_dir[1]
                 night_imgs = os.listdir(TEST_DATA + "/" + local + "/" + night)
-                imgs = choices(night_imgs, k=5)
-                for nightimg in imgs:
+                #imgs = choices(night_imgs, k=5)
+                for nightimg in night_imgs:
                     daypath = TEST_DATA + "/" + locations + "/" + day + "/" + dayimg
                     nightpath = TEST_DATA + "/" + local + "/" + night + "/" + nightimg
                     yield daypath, nightpath
@@ -113,7 +113,7 @@ def va_get_next_negative_path():
                 indv_loc_dir = os.listdir(VALID_DATA + "/" + local)
                 night = indv_loc_dir[1]
                 night_imgs = os.listdir(VALID_DATA + "/" + local + "/" + night)
-                imgs = choices(night_imgs, k=5)
+                imgs = choices(night_imgs, k=25)
                 for nightimg in imgs:
                     daypath = VALID_DATA + "/" + locations + "/" + day + "/" + dayimg
                     nightpath = VALID_DATA + "/" + local + "/" + night + "/" + nightimg
