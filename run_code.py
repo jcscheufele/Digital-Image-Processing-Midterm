@@ -28,11 +28,11 @@ if __name__ == "__main__":
     print("va_data saved")'''
 
     print("loading tr_data")
-    tr_dataset = torch.load("../data/datasets/tr_unprocessed_144x256.pt")
+    tr_dataset = torch.load("../data/datasets/tr_unprocessed_bal_144x256.pt")
     print("tr_data loaded")
 
     print("loading va_data")
-    va_dataset = torch.load("../data/datasets/va_unprocessed_bot3_144x256.pt")
+    va_dataset = torch.load("../data/datasets/va_unprocessed_bal_bot3_144x256.pt")
     print("va_data loaded")
    
     batch_size = 128
