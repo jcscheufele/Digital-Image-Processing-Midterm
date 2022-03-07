@@ -4,7 +4,7 @@ import cv2, os
 from random import choices
 import wandb
 import numpy as np
-
+import torch
 from torch.nn import BCELoss
 
 TRAIN_DATA = '../data/train'
